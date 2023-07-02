@@ -60,11 +60,7 @@ class Analyzer:
 
 if __name__ == '__main__':
     rec = Recognizer()
-    image_path = "test_images/16.jpg"
-    image = Image.open(image_path)
 
-    # print(rec(image))
-    # print(image_path[0:image_path.rfind('.')])
     for x in os.listdir('test_images/series_1'):
         image = Image.open("test_images/series_1/" + x)
         print(rec(image), ":", x[x.find('_')+1:x.rfind('.')])
