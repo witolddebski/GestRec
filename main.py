@@ -63,8 +63,12 @@ if __name__ == '__main__':
     image_path = "test_images/16.jpg"
     image = Image.open(image_path)
 
-    print(rec(image))
-    # print(os.listdir('test_images'))
+    # print(rec(image))
+    # print(image_path[0:image_path.rfind('.')])
+    for x in os.listdir('test_images/series_1'):
+        image = Image.open("test_images/series_1/" + x)
+        print(rec(image), ":", x[x.find('_')+1:x.rfind('.')])
+
 # TODO:
 # run model on an image
 # try training resnet with pretrained=True
