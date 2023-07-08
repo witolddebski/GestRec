@@ -19,8 +19,6 @@ if __name__ == '__main__':
     while cap.isOpened():
         success, image = cap.read()
         if not success:
-            print("Ignoring empty camera frame.")
-            # If loading a video, use 'break' instead of 'continue'.
             continue
         image.flags.writeable = False
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
