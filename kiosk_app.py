@@ -22,9 +22,11 @@ if __name__ == '__main__':
         if not success:
             continue
         image.flags.writeable = False
-        image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+        image = image[:, :, [2, 1, 0]]
         result = kiosk(Image.fromarray(image))
         image = cv.cvtColor(image, cv.COLOR_RGB2BGR)
+        image.flags.writeable = True
+        image = cv.flip(image, 1)
         cv.putText(image, result, (50, 50), cv.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0))
 
         curr_time = time.time()
