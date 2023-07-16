@@ -6,7 +6,7 @@ from PIL import Image
 
 class Kiosk:
     def __init__(self):
-        self.rec = gesture.Recognizer()
+        self.rec = gesture.Recognizer(model='mobilenet224')
 
     def __call__(self, img):
         return self.rec(img)
@@ -21,12 +21,12 @@ if __name__ == '__main__':
         success, image = cap.read()
         if not success:
             continue
+        image = cv.flip(image, 1)
         image.flags.writeable = False
         image = image[:, :, [2, 1, 0]]
         result = kiosk(Image.fromarray(image))
         image = cv.cvtColor(image, cv.COLOR_RGB2BGR)
         image.flags.writeable = True
-        image = cv.flip(image, 1)
         cv.putText(image, result, (50, 50), cv.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0))
 
         curr_time = time.time()

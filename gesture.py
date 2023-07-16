@@ -12,8 +12,8 @@ class Recognizer:
     Perform overall recognition process
     """
 
-    def __init__(self):
-        self.detector = Detector()
+    def __init__(self, model='mobilenet'):
+        self.detector = Detector(model)
         self.analyzer = Analyzer()
 
     def __call__(self, img):
@@ -33,18 +33,36 @@ class Detector:
             self.model = torchvision.models.resnet34()
             self.model.fc = nn.Linear(self.model.fc.in_features, len(self.classes))
             self.model.load_state_dict(torch.load('models/resnet34.zip', map_location=torch.device('cpu')))
-        if model == 'mobilenet':
+            self.transformer = transforms.Compose([
+                transforms.Resize([512, 512]),
+                transforms.ToTensor(),
+                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            ])
+
+        elif model == 'mobilenet':
             self.model = torchvision.models.mobilenet_v3_large()
             num_features = self.model.classifier._modules['3'].in_features
             self.model.classifier._modules['3'] = nn.Linear(num_features, len(self.classes), bias=True)
-            self.model.load_state_dict(torch.load('models/mobilenet_v3_large.zip', map_location=torch.device('cpu')))
+            self.model.load_state_dict(torch.load('models/mobilenet_v3_large512.zip', map_location=torch.device('cpu')))
+            self.transformer = transforms.Compose([
+                transforms.Resize([512, 512]),
+                transforms.ToTensor(),
+                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            ])
 
-        self.transformer = transforms.Compose([
-            transforms.Resize([512, 512]),
-            # transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ])
+        elif model == 'mobilenet224':
+            self.model = torchvision.models.mobilenet_v3_large()
+            num_features = self.model.classifier._modules['3'].in_features
+            self.model.classifier._modules['3'] = nn.Linear(num_features, len(self.classes), bias=True)
+            self.model.load_state_dict(torch.load('models/mobilenet_v3_large224.zip', map_location=torch.device('cpu')))
+            self.transformer = transforms.Compose([
+                transforms.Resize([256, 256]),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+            ])
+
+
 
         self.model.eval()
 
@@ -91,7 +109,7 @@ class Analyzer:
 
 
 if __name__ == '__main__':
-    rec = Recognizer()
+    rec = Recognizer(model='mobilenet224')
 
     start_time = time.time()
     for x in os.listdir('test_images/series_1'):
