@@ -45,6 +45,8 @@ class VendingMachine:
         self.distributor = Distributor()
         self.state = State.IDLE
         self.order = None
+        self.gesture_dict = ["1", "2", "3", "3", "4", "5", "thumbs_down", "thumbs_up", "ok", "none", "none", "none",
+                             "none", "stop", "none", "none", "none", "none", "none", "none"]
 
     def fetch_frame(self):
         if self.cap.isOpened():
@@ -68,6 +70,7 @@ class VendingMachine:
             image = image[:, :, [2, 1, 0]]
 
             result = self.rec(Image.fromarray(image))
+            result = self.gesture_dict[result]
 
             image = cv.cvtColor(image, cv.COLOR_RGB2BGR)
             image.flags.writeable = True
@@ -76,15 +79,15 @@ class VendingMachine:
             fps = int(1 / (curr_time - prev_time))
             prev_time = curr_time
 
-            # business logic
+            # vending machine logic
             offer = self.distributor.get_offering()
-            if self.state == State.IDLE and int(result) < len(offer):
+            if self.state == State.IDLE and result in ["1", "2", "3", "4", "5"] and int(result) <= len(offer):
 
-                if offer[int(result)].stock < 1:
+                if offer[int(result) - 1].stock < 1:
                     self.state = State.NO_STOCK
                     timer = 2 * fps
                 else:
-                    self.order = offer[int(result)]
+                    self.order = offer[int(result) - 1]
                     self.state = State.ORDER
 
             elif self.state == State.NO_STOCK:
@@ -94,9 +97,9 @@ class VendingMachine:
                     self.state = State.IDLE
 
             elif self.state == State.ORDER:
-                if result == '06':
+                if result in ['thumbs_down', 'stop']:
                     self.state = State.IDLE
-                elif result == '07':
+                elif result in ['thumbs_up', 'ok']:
                     self.state = State.PAYMENT
                     timer = 3 * fps
                 self.display.display_order(image, self.order, fps, result)
@@ -104,6 +107,13 @@ class VendingMachine:
             elif self.state == State.PAYMENT:
                 self.display.display_payment(image, fps, result)
                 timer -= 1
+                if timer < 1:
+                    self.state = State.DONE
+                    timer = 3 * fps
+
+            elif self.state == State.DONE:
+                timer -= 1
+                self.display.display_done(image, fps, result)
                 if timer < 1:
                     self.state = State.IDLE
             else:
@@ -148,9 +158,16 @@ class Display:
         self._draw_result(image, result)
         cv.imshow('display', image)
 
+    def display_done(self, image, fps, result):
+        self._draw_main_text(image, "take the cup out of the tray")
+        self._draw_subtext(image, "enjoy your drink!")
+        self._draw_fps(image, fps)
+        self._draw_result(image, result)
+        cv.imshow('display', image)
+
     def _draw_side(self, image, offer: list):
         for i in range(0, len(offer)):
-            text = str(i+1) + ". " + offer[i].name
+            text = str(i + 1) + ". " + offer[i].name
             cv.putText(image, text, (image.shape[1] - 200, 150 + i * 30 * self.text_size), self.text_font,
                        self.text_size, self.text_color, self.text_thick)
 
@@ -159,7 +176,7 @@ class Display:
                    self.text_thick)
 
     def _draw_result(self, image, result):
-        cv.putText(image, result, (image.shape[1] - 100, image.shape[0] - 50), self.text_font, self.text_size,
+        cv.putText(image, result, (image.shape[1] - 150, image.shape[0] - 50), self.text_font, self.text_size,
                    self.text_color, self.text_thick)
 
     def _draw_main_text(self, image, text):
