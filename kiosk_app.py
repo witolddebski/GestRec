@@ -69,12 +69,15 @@ class VendingMachine:
             image.flags.writeable = False
             image = image[:, :, [2, 1, 0]]
 
+            # perform recognition
             result = self.rec(Image.fromarray(image))
+            # apply custom labels
             result = self.gesture_dict[result]
 
             image = cv.cvtColor(image, cv.COLOR_RGB2BGR)
             image.flags.writeable = True
 
+            # measure number of frames per second
             curr_time = time.time()
             fps = int(1 / (curr_time - prev_time))
             prev_time = curr_time
