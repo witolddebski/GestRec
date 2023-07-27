@@ -24,16 +24,17 @@ class Distributor:
         # otherwise proceed to payment
         pass
 
-    def payment(self):
-        pass
+    def get_offering(self):
+        return self.beverages
 
 
 class State(Enum):
     DEBUG = 0
     IDLE = 1
-    ORDER = 2
-    PAYMENT = 3
-    DONE = 4
+    NO_STOCK = 2
+    ORDER = 3
+    PAYMENT = 4
+    DONE = 5
 
 
 class VendingMachine:
@@ -43,6 +44,7 @@ class VendingMachine:
         self.display = Display()
         self.distributor = Distributor()
         self.state = State.IDLE
+        self.order = None
 
     def fetch_frame(self):
         if self.cap.isOpened():
@@ -56,6 +58,7 @@ class VendingMachine:
 
     def launch(self):
         prev_time = time.time()
+        timer = 0
         while not cv.waitKey(5) & 0xFF == 27:
             image = self.fetch_frame()
             if image is None:
@@ -71,17 +74,41 @@ class VendingMachine:
 
             curr_time = time.time()
             fps = int(1 / (curr_time - prev_time))
+            prev_time = curr_time
 
             # business logic
-            offer = self.distributor.beverages
-            if int(result) < len(offer):
-                # order one of the beverages
-                pass
-            # draw current offer
+            offer = self.distributor.get_offering()
+            if self.state == State.IDLE and int(result) < len(offer):
+
+                if offer[int(result)].stock < 1:
+                    self.state = State.NO_STOCK
+                    timer = 2 * fps
+                else:
+                    self.order = offer[int(result)]
+                    self.state = State.ORDER
+
+            elif self.state == State.NO_STOCK:
+                self.display.display_no_stock(image, offer, fps, result)
+                timer -= 1
+                if timer < 1:
+                    self.state = State.IDLE
+
+            elif self.state == State.ORDER:
+                if result == '06':
+                    self.state = State.IDLE
+                elif result == '07':
+                    self.state = State.PAYMENT
+                    timer = 3 * fps
+                self.display.display_order(image, self.order, fps, result)
+
+            elif self.state == State.PAYMENT:
+                self.display.display_payment(image, fps, result)
+                timer -= 1
+                if timer < 1:
+                    self.state = State.IDLE
             else:
                 self.display.display_offer(image, offer, fps, result)
 
-            prev_time = curr_time
         self.cap.release()
         return
 
@@ -94,21 +121,53 @@ class Display:
         self.text_color = (255, 0, 0)
 
     def display_offer(self, image, offer, fps, result):
-        cv.putText(image, "please choose a drink", (50, 50), self.text_font, self.text_size, self.text_color,
-                   self.text_thick)
-
+        self._draw_main_text(image, "please choose a drink")
         self._draw_side(image, offer)
-        cv.putText(image, str(fps), (50, image.shape[0] - 50), self.text_font, self.text_size, (0, 0, 255),
-                   self.text_thick)
-        cv.putText(image, result, (image.shape[1] - 100, image.shape[0] - 50), self.text_font, self.text_size,
-                   self.text_color, self.text_thick)
+        self._draw_fps(image, fps)
+        self._draw_result(image, result)
+        cv.imshow('display', image)
+
+    def display_no_stock(self, image, offer, fps, result):
+        self._draw_main_text(image, "drink out of stock")
+        self._draw_side(image, offer)
+        self._draw_fps(image, fps)
+        self._draw_result(image, result)
+        cv.imshow('display', image)
+
+    def display_order(self, image, order, fps, result):
+        self._draw_main_text(image, "please confirm order: " + order.name + " $" + str(order.price))
+        self._draw_subtext(image, "use thumbs up / down")
+        self._draw_fps(image, fps)
+        self._draw_result(image, result)
+        cv.imshow('display', image)
+
+    def display_payment(self, image, fps, result):
+        self._draw_main_text(image, "pending payment")
+        self._draw_subtext(image, "please follow card reader instructions")
+        self._draw_fps(image, fps)
+        self._draw_result(image, result)
         cv.imshow('display', image)
 
     def _draw_side(self, image, offer: list):
         for i in range(0, len(offer)):
-            text = str(i) + ". " + offer[i].name
+            text = str(i+1) + ". " + offer[i].name
             cv.putText(image, text, (image.shape[1] - 200, 150 + i * 30 * self.text_size), self.text_font,
                        self.text_size, self.text_color, self.text_thick)
+
+    def _draw_fps(self, image, fps):
+        cv.putText(image, str(fps), (50, image.shape[0] - 50), self.text_font, self.text_size, (0, 0, 255),
+                   self.text_thick)
+
+    def _draw_result(self, image, result):
+        cv.putText(image, result, (image.shape[1] - 100, image.shape[0] - 50), self.text_font, self.text_size,
+                   self.text_color, self.text_thick)
+
+    def _draw_main_text(self, image, text):
+        cv.putText(image, text, (50, 50), self.text_font, self.text_size, self.text_color, self.text_thick)
+
+    def _draw_subtext(self, image, text):
+        cv.putText(image, text, (50, 50 + 30 * self.text_size), self.text_font, self.text_size * .7, self.text_color,
+                   self.text_thick)
 
 
 if __name__ == '__main__':
