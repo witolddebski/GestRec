@@ -5,6 +5,8 @@ import torchvision.transforms as transforms
 import os
 import time
 from PIL import Image
+import torch.ao.quantization
+import torchvision.models.mobilenetv3
 
 
 class Recognizer:
@@ -66,6 +68,14 @@ class Detector:
 
         self.model.eval()
 
+        # fuse modules
+        for m in self.model.modules():
+            if type(m) == torchvision.ops.Conv2dNormActivation:
+                if len(m) == 3 and type(m[2]) == torch.nn.ReLU:
+                    torch.ao.quantization.fuse_modules(m, [['0', '1', '2']], inplace=True)
+                else:
+                    torch.ao.quantization.fuse_modules(m, [['0', '1']], inplace=True)
+
         if jit_trace:
             sample_image = Image.open("test_images/16.jpg")
             sample_image = self.transformer(sample_image)
@@ -115,12 +125,13 @@ class Analyzer:
 
 if __name__ == '__main__':
     rec = Recognizer(model_name='mobilenet224')
-
+    images = [Image.open("test_images/series_1/" + x) for x in os.listdir('test_images/series_1')]
+    repeats = 15
     start_time = time.time()
-    for x in os.listdir('test_images/series_1'):
-        image = Image.open("test_images/series_1/" + x)
-        print(rec(image), ":", x[x.find('_') + 1:x.rfind('.')])
+    for i in range(repeats):
+        for image in images:
+            print(rec(image))
+
     end_time = time.time()
     frames = len(os.listdir('test_images/series_1'))
-    print("Frame rate: ", frames / (end_time - start_time))
-
+    print("Frame rate: %.3f" % (frames * repeats / (end_time - start_time)))
