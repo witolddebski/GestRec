@@ -16,7 +16,7 @@ class Recognizer:
         self.detector = Detector(model_name)
         self.analyzer = Analyzer()
 
-    def __call__(self, img):
+    def __call__(self, img) -> int:
         return self.analyzer(self.detector(img))
 
 
@@ -26,8 +26,8 @@ class Detector:
     """
 
     def __init__(self, model_name: str, jit_trace: bool = True):
-        self.classes = ['00', '01', '10', '11', '12', '13', '14', '15', '16', '17',
-                        '18', '19', '02', '03', '04', '05', '06', '07', '08', '09']
+        self.classes = [0, 1, 10, 11, 12, 13, 14, 15, 16, 17,
+                        18, 19, 2, 3, 4, 5, 6, 7, 8, 9]
 
         if model_name == 'resnet34':
             self.model = torchvision.models.resnet34()
@@ -39,7 +39,7 @@ class Detector:
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
             ])
 
-        elif model_name == 'mobilenet':
+        elif model_name == 'mobilenet512':
             self.model = torchvision.models.mobilenet_v3_large()
             num_features = self.model.classifier._modules['3'].in_features
             self.model.classifier._modules['3'] = nn.Linear(num_features, len(self.classes), bias=True)
@@ -74,7 +74,7 @@ class Detector:
         else:
             self.model = torch.jit.optimize_for_inference(torch.jit.script(self.model))
 
-    def __call__(self, img_raw) -> str:
+    def __call__(self, img_raw) -> int:
         """
         Perform inference of the gesture in an image.
         :param img_raw: PIL image to be analyzed. The image must be flipped horizontally, as when using a frontal camera
@@ -94,13 +94,13 @@ class Analyzer:
     Analyze Detector results across frames
     """
 
-    def __init__(self, model='mobilenet', jit_trace=True, threshold=3):
-        self.current_gest = '19'
+    def __init__(self, threshold: int = 3):
+        self.current_gest = 19
         self.counter = 0
-        self.predicted_gest = '19'
+        self.predicted_gest = 19
         self.threshold = threshold
 
-    def __call__(self, detected_gest: str) -> str:
+    def __call__(self, detected_gest: int) -> int:
         if detected_gest != self.current_gest and detected_gest == self.predicted_gest:
             if self.counter < self.threshold:
                 self.counter += 1
