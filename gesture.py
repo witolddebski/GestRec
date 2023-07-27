@@ -85,8 +85,8 @@ class Detector:
 
         with torch.inference_mode():
             outputs = self.model(img)
-            _, pred = torch.max(outputs, 1)
-        return self.classes[pred[0]]
+            _, prediction = torch.max(outputs, 1)
+        return self.classes[prediction[0]]
 
 
 class Analyzer:
