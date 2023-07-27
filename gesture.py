@@ -12,9 +12,9 @@ class Recognizer:
     Perform overall recognition process
     """
 
-    def __init__(self, model_name: str = 'mobilenet224'):
+    def __init__(self, model_name: str = 'mobilenet224', threshold: int = 3):
         self.detector = Detector(model_name)
-        self.analyzer = Analyzer()
+        self.analyzer = Analyzer(threshold=threshold)
 
     def __call__(self, img) -> int:
         return self.analyzer(self.detector(img))
@@ -94,7 +94,7 @@ class Analyzer:
     Analyze Detector results across frames
     """
 
-    def __init__(self, threshold: int = 3):
+    def __init__(self, threshold: int):
         self.current_gest = 19
         self.counter = 0
         self.predicted_gest = 19
@@ -124,10 +124,3 @@ if __name__ == '__main__':
     frames = len(os.listdir('test_images/series_1'))
     print("Frame rate: ", frames / (end_time - start_time))
 
-# TODO:
-# try better preprocessing, as in raspberry Pi example
-# testing
-# add possibility of modifying detector & analyzer
-# add type hints
-# create subclass handling camera for Kiosk app
-# create Kiosk app logic
