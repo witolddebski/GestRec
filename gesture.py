@@ -1,11 +1,11 @@
-import torch
+import torch.jit
 import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 import os
 import time
 from PIL import Image
-import torch.ao.quantization
+import torch.ao.quantization as quantize
 import torchvision.models.mobilenetv3
 
 
@@ -23,11 +23,13 @@ class Recognizer:
 
 
 class Detector:
-    """
-    Detect and classify gestures from images.
-    """
 
-    def __init__(self, model_name: str, jit_trace: bool = True):
+    def __init__(self, model_name: str, jit_trace: bool = True) -> None:
+        """
+        Create a Detector object. Model chosen by passing model_name is then fused and compiled to TorchScript.
+        :param model_name: model of choice. Must be one of 'resnet34', 'mobilenet512' or 'mobilenet224'.
+        :param jit_trace: bool specifying if compilation to TorchScript should be done via scripting or tracing.
+        """
         self.classes = [0, 1, 10, 11, 12, 13, 14, 15, 16, 17,
                         18, 19, 2, 3, 4, 5, 6, 7, 8, 9]
 
@@ -51,6 +53,8 @@ class Detector:
                 transforms.ToTensor(),
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
             ])
+            self.model.eval()
+            self.__fuse_mobilenet()
 
         elif model_name == 'mobilenet224':
             self.model = torchvision.models.mobilenet_v3_large()
@@ -63,18 +67,15 @@ class Detector:
                 transforms.ToTensor(),
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
             ])
+            self.model.eval()
+            self.__fuse_mobilenet()
         else:
             raise ValueError('model_name must be one of available models')
 
         self.model.eval()
 
         # fuse modules
-        for m in self.model.modules():
-            if type(m) == torchvision.ops.Conv2dNormActivation:
-                if len(m) == 3 and type(m[2]) == torch.nn.ReLU:
-                    torch.ao.quantization.fuse_modules(m, [['0', '1', '2']], inplace=True)
-                else:
-                    torch.ao.quantization.fuse_modules(m, [['0', '1']], inplace=True)
+        print(self.model)
 
         if jit_trace:
             sample_image = Image.open("test_images/16.jpg")
@@ -83,6 +84,15 @@ class Detector:
             self.model = torch.jit.optimize_for_inference(torch.jit.trace(self.model, sample_image))
         else:
             self.model = torch.jit.optimize_for_inference(torch.jit.script(self.model))
+
+    def __fuse_mobilenet(self):
+        for m in self.model.modules():
+            if type(m) == torchvision.ops.Conv2dNormActivation:
+                # noinspection PyTypeChecker
+                if len(m) == 3 and type(m[2]) == torch.nn.ReLU:
+                    quantize.fuse_modules(m, [['0', '1', '2']], inplace=True)
+                else:
+                    quantize.fuse_modules(m, [['0', '1']], inplace=True)
 
     def __call__(self, img_raw) -> int:
         """
@@ -101,7 +111,7 @@ class Detector:
 
 class Analyzer:
     """
-    Analyze Detector results across frames
+    Analyzes Detector results across frames.
     """
 
     def __init__(self, threshold: int):
