@@ -15,20 +15,34 @@ class Recognizer:
     """
 
     def __init__(self, model_name: str = 'mobilenet224', threshold: int = 3):
+        """
+        Create a Recognizer object. It initiates one of Detector and Analyzer, necessary for recognition.
+        :param model_name: model of choice, passed to Detector. See Detector's constructor.
+        :param threshold: threshold, passed to Analyzer. See Analyzer's constructor.
+        """
         self.detector = Detector(model_name)
         self.analyzer = Analyzer(threshold=threshold)
 
     def __call__(self, img) -> int:
+        """
+        Perform inference by passing the image to Detector and then Analyzer.
+        :param img: PIL image to be analyzed, passed to Detector. The image must be flipped horizontally, as when using
+        a frontal camera.
+        :return: class id of detected gesture.
+        """
         return self.analyzer(self.detector(img))
 
 
 class Detector:
-
+    """
+    Responsible for inferring a gesture from an image. Contains a model used in the recognition process.
+    """
     def __init__(self, model_name: str, jit_trace: bool = True) -> None:
         """
         Create a Detector object. Model chosen by passing model_name is then fused and compiled to TorchScript.
         :param model_name: model of choice. Must be one of 'resnet34', 'mobilenet512' or 'mobilenet224'.
         :param jit_trace: bool specifying if compilation to TorchScript should be done via scripting or tracing.
+        :raise ValueError: if anything beside the valid model names is used.
         """
         self.classes = [0, 1, 10, 11, 12, 13, 14, 15, 16, 17,
                         18, 19, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -86,6 +100,10 @@ class Detector:
             self.model = torch.jit.optimize_for_inference(torch.jit.script(self.model))
 
     def __fuse_mobilenet(self):
+        """
+        Fuses self.model to provide better performance. Do not use on models other than MobilenetV3_large!
+        :return: None, overwrites model stored in self.model.
+        """
         for m in self.model.modules():
             if type(m) == torchvision.ops.Conv2dNormActivation:
                 # noinspection PyTypeChecker
@@ -97,8 +115,9 @@ class Detector:
     def __call__(self, img_raw) -> int:
         """
         Perform inference of the gesture in an image.
-        :param img_raw: PIL image to be analyzed. The image must be flipped horizontally, as when using a frontal camera
-        :return: string with class number of detected gesture
+        :param img_raw: PIL image to be analyzed. The image must be flipped horizontally, as when using
+        a frontal camera.
+        :return: string with class number of detected gesture.
         """
         img = self.transformer(img_raw)
         img = img.unsqueeze(0)
@@ -111,16 +130,28 @@ class Detector:
 
 class Analyzer:
     """
-    Analyzes Detector results across frames.
+    Analyze Detector results across frames. the Analyzer makes the results more robust by tracking the current gesture.
     """
 
     def __init__(self, threshold: int):
+        """
+        Create an Analyzer object. Initially, the current gesture is set to 19.
+        :param threshold: controls how many consecutive frames should the gesture appear in before the analyzer starts.
+        outputting it as a current result. Increasing this number will make the prediction more robust, but less
+        responsive to gesture changes.
+        """
         self.current_gest = 19
         self.counter = 0
         self.predicted_gest = 19
         self.threshold = threshold
 
     def __call__(self, detected_gest: int) -> int:
+        """
+        Analyze a given result in the context of previous results. After consecutively seeing the same gesture
+        the number of times equal to threshold, the Analyzer will start outputting this gesture.
+        :param detected_gest: class id of the detected gesture.
+        :return: class id of the current gesture.
+        """
         if detected_gest != self.current_gest and detected_gest == self.predicted_gest:
             if self.counter < self.threshold:
                 self.counter += 1
@@ -129,6 +160,7 @@ class Analyzer:
                 self.current_gest = detected_gest
         else:
             self.predicted_gest = detected_gest
+            self.counter = 0
 
         return self.current_gest
 
