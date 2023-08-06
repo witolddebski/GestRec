@@ -7,10 +7,10 @@ GestRec
 ===================================
 
 .. toctree::
+   :maxdepth: 2
 
    usage
-   :maxdepth: 2
-   :caption: Contents:
+   reference
 
 First Steps
 -----------
