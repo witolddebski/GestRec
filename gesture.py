@@ -88,9 +88,6 @@ class Detector:
 
         self.model.eval()
 
-        # fuse modules
-        print(self.model)
-
         if jit_trace:
             sample_image = Image.open("test_images/16.jpg")
             sample_image = self.transformer(sample_image)
@@ -107,7 +104,7 @@ class Detector:
         for m in self.model.modules():
             if type(m) == torchvision.ops.Conv2dNormActivation:
                 # noinspection PyTypeChecker
-                if len(m) == 3 and type(m[2]) == torch.nn.ReLU:
+                if len(m) == 3 and type(m[2]) == nn.ReLU:
                     quantize.fuse_modules(m, [['0', '1', '2']], inplace=True)
                 else:
                     quantize.fuse_modules(m, [['0', '1']], inplace=True)
