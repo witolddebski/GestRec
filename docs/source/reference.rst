@@ -1,6 +1,5 @@
 Reference
 =========
 
-
 .. automodule:: gesture
-   :members:
+    :members:
