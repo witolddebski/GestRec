@@ -178,6 +178,7 @@ if __name__ == '__main__':
     rec = Recognizer(model_name='mobilenet224')
     images = [Image.open("test_images/series_1/" + x) for x in os.listdir('test_images/series_1')]
     repeats = 15
+    print(f'running test on loaded images {repeats} times')
     start_time = time.time()
     for i in range(repeats):
         for image in images:
@@ -185,4 +186,4 @@ if __name__ == '__main__':
 
     end_time = time.time()
     frames = len(os.listdir('test_images/series_1'))
-    print("Frame rate: %.3f" % (frames * repeats / (end_time - start_time)))
+    print("Test concluded. Frame rate: %.3f" % (frames * repeats / (end_time - start_time)))
