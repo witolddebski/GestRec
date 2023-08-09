@@ -30,7 +30,6 @@ autodoc_default_options = {
     'special-members': '__init__, __call__',
     'exclude-members': '__weakref__'
 }
-
 templates_path = ['_templates']
 exclude_patterns = []
 
