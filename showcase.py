@@ -25,17 +25,25 @@ class Camera:
             success, image = self.cap.read()
             if not success:
                 continue
+
+            # image needs to be flipped
             image = cv.flip(image, 1)
             image.flags.writeable = False
-            image = image[:, :, [2, 1, 0]]
+            image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+
+            # run the inference and apply custom label
             result = self.rec(Image.fromarray(image))
             label = self.labels[result]
+
             image = cv.cvtColor(image, cv.COLOR_RGB2BGR)
             image.flags.writeable = True
 
+            # calculate fps
             curr_time = time.time()
             fps = int(1 / (curr_time - prev_time))
             prev_time = curr_time
+
+            # draw results and display
             self.draw(image, fps, label)
             cv.imshow('camera', image)
 
