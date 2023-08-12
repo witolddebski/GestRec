@@ -27,6 +27,23 @@ class Distributor:
     def get_offering(self):
         return self.beverages
 
+    def purchase(self, bev_id: int) -> bool:
+        if type(bev_id) is int and bev_id in range(0, len(self.beverages)) and self.beverages[bev_id].stock > 0:
+            self.beverages[bev_id].stock -= 1
+            return True
+        else:
+            return False
+
+    def restock(self, bev_id: int, stock: int) -> bool:
+        if type(bev_id) is int and bev_id in range(0, len(self.beverages)):
+            self.beverages[bev_id].stock += stock
+            return True
+        else:
+            return False
+
+    def add_beverage(self, beverage: Beverage):
+        self.beverages.append(beverage)
+
 
 class State(Enum):
     DEBUG = 0
@@ -45,6 +62,7 @@ class VendingMachine:
         self.distributor = Distributor()
         self.state = State.IDLE
         self.order = None
+        self.bev_id = -1
         self.gesture_dict = ["1", "2", "3", "3", "4", "5", "thumbs_down", "thumbs_up", "ok", "none", "none", "none",
                              "none", "stop", "none", "none", "none", "none", "none", "none"]
 
@@ -85,12 +103,12 @@ class VendingMachine:
             # vending machine logic
             offer = self.distributor.get_offering()
             if self.state == State.IDLE and result in ["1", "2", "3", "4", "5"] and int(result) <= len(offer):
-
-                if offer[int(result) - 1].stock < 1:
+                self.bev_id = int(result) - 1
+                if offer[self.bev_id].stock < 1:
                     self.state = State.NO_STOCK
                     timer = 2 * fps
                 else:
-                    self.order = offer[int(result) - 1]
+                    self.order = offer[self.bev_id]
                     self.state = State.ORDER
 
             elif self.state == State.NO_STOCK:
@@ -113,6 +131,7 @@ class VendingMachine:
                 if timer < 1:
                     self.state = State.DONE
                     timer = 3 * fps
+                    self.distributor.purchase(self.bev_id)
 
             elif self.state == State.DONE:
                 timer -= 1
@@ -149,14 +168,14 @@ class Display:
 
     def display_order(self, image, order, fps, result):
         self._draw_main_text(image, "please confirm order: " + order.name + " $" + str(order.price))
-        self._draw_subtext(image, "use thumbs up / down")
+        self._draw_subtext(image, "use thumbs up / down or ok / stop")
         self._draw_fps(image, fps)
         self._draw_result(image, result)
         cv.imshow('display', image)
 
     def display_payment(self, image, fps, result):
         self._draw_main_text(image, "pending payment")
-        self._draw_subtext(image, "please follow card reader instructions")
+        self._draw_subtext(image, "imagine a payment process here")
         self._draw_fps(image, fps)
         self._draw_result(image, result)
         cv.imshow('display', image)
