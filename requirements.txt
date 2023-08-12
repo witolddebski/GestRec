@@ -1,3 +1,6 @@
 torch==2.0.1
 alabaster
 sphinx_rtd_theme
+torchvision~=0.15.2
+Pillow~=9.5.0
+opencv-python~=4.8.0.74
