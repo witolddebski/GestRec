@@ -15,8 +15,8 @@ extensions = [
 ]
 
 autodoc_class_signature = "separated"
-master_doc = 'index'
-root_doc = 'index'
+master_doc = 'source/index'
+root_doc = 'source/index'
 autodoc_default_options = {
     'member-order': 'bysource',
     'special-members': '__init__, __call__',
