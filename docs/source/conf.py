@@ -1,12 +1,12 @@
 import sys
-import os
+import pathlib
 
 project = 'GestRec'
 copyright = '2023, Witold Debski'
 author = 'Witold Debski'
 release = '0.1'
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, pathlib.Path(__file__).parents[2].resolve().as_posix())
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.duration',
@@ -15,8 +15,8 @@ extensions = [
 ]
 
 autodoc_class_signature = "separated"
-master_doc = 'source/index'
-root_doc = 'source/index'
+master_doc = 'index'
+root_doc = 'index'
 autodoc_default_options = {
     'member-order': 'bysource',
     'special-members': '__init__, __call__',
