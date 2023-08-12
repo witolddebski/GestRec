@@ -1,4 +1,3 @@
-
 GestRec
 ===================================
 
@@ -14,6 +13,7 @@ Check out the :doc:`usage` section for further information.
 
    usage
    reference
+   example_kiosk
 
 Indices and tables
 ------------------
