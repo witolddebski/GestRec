@@ -8,3 +8,11 @@ Using the library is as simple as defining the Recognizer object and passing a P
 
     rec = Recognizer()
     rec(image)
+
+The library supports recognition of the following set of gestures:
+
+<img src="docs/images/class_guide.png" style="width:500px;align:center"/>
+
+# Docs
+
+You can find the library documentation [here](https://gestrec.readthedocs.io/en/latest/index.html).
