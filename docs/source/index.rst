@@ -12,8 +12,8 @@ Check out the :doc:`usage` section for further information.
    :hidden:
 
    usage
-   reference
    example_kiosk
+   reference
 
 Indices and tables
 ------------------

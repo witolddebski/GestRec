@@ -24,6 +24,8 @@ to be processed. A test image is supplied with this package:
     >>> from PIL import Image
     >>> image = Image.open("test_images/16.jpg")
 
+This image is already flipped horizontally, but all your analyzed images need to be flipped horizontally.
+
 Then, use the ``__call__`` method to perform inference:
 
 .. code-block:: python

@@ -26,5 +26,13 @@ For example, in order to purchase a beverage, the user needs to choose a beverag
 and then confirm selection with another one. This chain of gestures is interpreted by ``VendingMachine``,
 which then calls ``purchase()`` on ``Distributor``.
 
+It is important to note that all images are flipped horizontally using OpenCV before inference:
+
+.. code-block:: python
+
+    >>> image = cv.flip(image, 1)
+
+
 Inside ``VendingMachine`` you will also find an example of mapping class IDs onto a custom set of labels
 in form of ``self.gesture_dict``.
+
