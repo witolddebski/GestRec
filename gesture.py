@@ -27,7 +27,7 @@ class Recognizer:
         self.detector = Detector(model_name)
         self.analyzer = Analyzer(threshold=threshold)
 
-    def __call__(self, img) -> int:
+    def __call__(self, img: Image.Image) -> int:
         """
         Perform inference by passing the image to Detector and then Analyzer.
 
@@ -116,7 +116,7 @@ class Detector:
                 else:
                     quantize.fuse_modules(m, [['0', '1']], inplace=True)
 
-    def __call__(self, img_raw) -> int:
+    def __call__(self, img_raw: Image.Image) -> int:
         """
         Perform inference of the gesture in an image.
 
