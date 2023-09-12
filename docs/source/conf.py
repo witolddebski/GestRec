@@ -6,7 +6,7 @@ copyright = '2023, Witold Debski'
 author = 'Witold Debski'
 release = '0.1'
 
-sys.path.insert(0, pathlib.Path(__file__).parents[2].resolve().as_posix())
+sys.path.insert(0, pathlib.Path(__file__).parents[2].joinpath('gestrec').resolve().as_posix())
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.duration',

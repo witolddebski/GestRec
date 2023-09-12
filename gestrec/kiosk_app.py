@@ -1,4 +1,4 @@
-import gesture
+import gestrec
 import cv2 as cv
 import time
 from PIL import Image
@@ -57,7 +57,7 @@ class State(Enum):
 class VendingMachine:
     def __init__(self):
         self.cap = cv.VideoCapture(0, cv.CAP_DSHOW)
-        self.rec = gesture.Recognizer(model_name='mobilenet224')
+        self.rec = gestrec.Recognizer(model_name='mobilenet224')
         self.display = Display()
         self.distributor = Distributor()
         self.state = State.IDLE

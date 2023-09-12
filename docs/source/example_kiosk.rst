@@ -9,7 +9,7 @@ of a ``VendingMachine`` object:
 
 .. code-block:: python
 
-    >>> import gesture.kiosk_app as kiosk
+    >>> import gestrec.kiosk_app as kiosk
     >>> machine1 = kiosk.VendingMachine()
     >>> machine1.launch()
 

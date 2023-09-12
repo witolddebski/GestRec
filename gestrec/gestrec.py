@@ -56,7 +56,7 @@ class Detector:
         if model_name == 'resnet34':
             self.model = torchvision.models.resnet34()
             self.model.fc = nn.Linear(self.model.fc.in_features, len(self.classes))
-            self.model.load_state_dict(torch.load('models/resnet34.zip', map_location=torch.device('cpu')))
+            self.model.load_state_dict(torch.load('../models/resnet34.zip', map_location=torch.device('cpu')))
             self.transformer = transforms.Compose([
                 transforms.Resize([512, 512]),
                 transforms.ToTensor(),
@@ -67,7 +67,7 @@ class Detector:
             self.model = torchvision.models.mobilenet_v3_large()
             num_features = self.model.classifier._modules['3'].in_features
             self.model.classifier._modules['3'] = nn.Linear(num_features, len(self.classes), bias=True)
-            self.model.load_state_dict(torch.load('models/mobilenet_v3_large512.zip', map_location=torch.device('cpu')))
+            self.model.load_state_dict(torch.load('../models/mobilenet_v3_large512.zip', map_location=torch.device('cpu')))
             self.transformer = transforms.Compose([
                 transforms.Resize([512, 512]),
                 transforms.ToTensor(),
@@ -80,7 +80,7 @@ class Detector:
             self.model = torchvision.models.mobilenet_v3_large()
             num_features = self.model.classifier._modules['3'].in_features
             self.model.classifier._modules['3'] = nn.Linear(num_features, len(self.classes), bias=True)
-            self.model.load_state_dict(torch.load('models/mobilenet_v3_large224.zip', map_location=torch.device('cpu')))
+            self.model.load_state_dict(torch.load('../models/mobilenet_v3_large224.zip', map_location=torch.device('cpu')))
             self.transformer = transforms.Compose([
                 transforms.Resize([256, 256]),
                 transforms.CenterCrop(224),
@@ -95,7 +95,7 @@ class Detector:
         self.model.eval()
 
         if jit_trace:
-            sample_image = Image.open("test_images/16.jpg")
+            sample_image = Image.open("../test_images/16.jpg")
             sample_image = self.transformer(sample_image)
             sample_image = sample_image.unsqueeze(0)
             self.model = torch.jit.optimize_for_inference(torch.jit.trace(self.model, sample_image))
@@ -176,7 +176,7 @@ class Analyzer:
 
 if __name__ == '__main__':
     rec = Recognizer(model_name='mobilenet224')
-    images = [Image.open("test_images/series_1/" + x) for x in os.listdir('test_images/series_1')]
+    images = [Image.open("../test_images/series_1/" + x) for x in os.listdir('../test_images/series_1')]
     repeats = 15
     print(f'running test on loaded images {repeats} times')
     start_time = time.time()
@@ -185,5 +185,5 @@ if __name__ == '__main__':
             print(rec(image))
 
     end_time = time.time()
-    frames = len(os.listdir('test_images/series_1'))
+    frames = len(os.listdir('../test_images/series_1'))
     print("Test concluded. Frame rate: %.3f" % (frames * repeats / (end_time - start_time)))

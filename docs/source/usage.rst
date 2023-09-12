@@ -13,8 +13,8 @@ To use GestRec, import the package and create the ``Recognizer`` object:
 
 .. code-block:: python
 
-   >>> import gesture
-   >>> rec = Recognizer()
+   >>> import gestrec
+   >>> rec = gestrec.Recognizer()
 
 The default model loaded is MobileNetV3-Large [1]_. Next, all you need is an image
 to be processed. A test image is supplied with this package:
@@ -57,7 +57,7 @@ To check how the recognition performs in your lighting conditions, you can run t
 
 .. code-block:: python
 
-    >>> import gesture.showcase as showcase
+    >>> import gestrec.showcase as showcase
     >>> cam = showcase.Camera()
     >>> cam.launch()
 
