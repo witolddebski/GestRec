@@ -1,4 +1,4 @@
-import gesture
+import gestrec.gesture as gesture
 import cv2 as cv
 import time
 from PIL import Image
