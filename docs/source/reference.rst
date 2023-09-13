@@ -1,5 +1,5 @@
 Reference
 =========
 
-.. automodule:: gestrec
+.. automodule:: gesture
     :members:
