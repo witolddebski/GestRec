@@ -4,7 +4,11 @@ Getting Started
 Installation
 ------------
 
-Begin by cloning the repository from `github <https://github.com/witolddebski/gestRec/tree/master>`_.
+Begin by cloning the repository from `github <https://github.com/witolddebski/GestRec>`_.
+
+.. code-block:: console
+
+   $ pip install "git+https://github.com/witolddebski/GestRec"
 
 Classifying Gestures
 --------------------

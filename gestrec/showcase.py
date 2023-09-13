@@ -1,4 +1,4 @@
-import gestrec
+import gesture
 import cv2 as cv
 import time
 from PIL import Image
@@ -7,7 +7,7 @@ from PIL import Image
 class Camera:
     def __init__(self):
         self.cap = cv.VideoCapture(0, cv.CAP_DSHOW)
-        self.rec = gestrec.Recognizer(model_name='mobilenet224')
+        self.rec = gesture.Recognizer(model_name='mobilenet224')
         self.text_font = cv.FONT_HERSHEY_SIMPLEX
         self.labels = ["1", "2", "3", "3_alt", "4", "5", "thumbs_down", "thumbs_up", "ok", "salute", "4_down",
                        "1_down", "3_down", "stop", "fist", "delete", "L", "Y", "rock", "none"]
