@@ -17,8 +17,8 @@ To use GestRec, import the package and create the ``Recognizer`` object:
 
 .. code-block:: python
 
-   >>> import gestrec
-   >>> rec = gestrec.Recognizer()
+   >>> import gestrec.gesture as gs
+   >>> rec = gs.Recognizer()
 
 The default model loaded is MobileNetV3-Large [1]_. Next, all you need is an image
 to be processed. A test image is supplied with this package:

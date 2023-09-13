@@ -13,7 +13,7 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.napoleon',
 ]
-
+autodoc_mock_imports = ["torch", "torchvision"]
 autodoc_class_signature = "separated"
 master_doc = 'index'
 root_doc = 'index'
